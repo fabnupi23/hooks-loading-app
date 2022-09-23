@@ -1,1 +1,85 @@
-*Este ejemplo es el más importante de las referncias mutables 
+*Este ejemplo es el más importante de las referncias mutables.
+
+*En el archivo Card vamos a imprimir en pantalla un POST que vamos a crear nosotros mismos y después vamos a traerlo desde una API a JSON.placeholder
+ así que importamos el useState y vamos a crearnos un nuevo estado que tenga post y setPost, de valor incial va a tener un initialPost:
+
+    const [post, setPost] = useState({ title: "post1"});
+
+verificamos que si se este mostrando en pantalla, al ver que si se muestra y ahora vamos a buscar el endpoint de la API para traer un Post 
+ahora vamos a ahcer un llamado a la API y a estos llamados siempre se recomienda hacerlos en un archivo independiente, por ende se crea una 
+carpeta llamada Helpers y dentro de la carpeta vamos a crear el archivo getPost.js, en ese archivo creamos la función getPost que va a ser 
+igual a una arrowFunction y este archivo lo exportamos.
+
+Después de realizar la estructura del getPost lo importamos en el Card.js, entonces vamos a decirle que cuando cargue el componente por primera vez nos cargue un POST 
+para eso llamamos al useEffect y cuando neesitamos que algo suceda solamente la primera vez  que se ejecuta o que se cargue el componente y no suceda más nunca lo hacemos
+con un efecto y le enviamos como argumento un arreglo vacio, así que llamamos a una función que se llame updatePost 
+
+            function Card() {
+            const [post, setPost] = useState({ title: "post1"});
+            const updatePost =  () =>{
+                
+                getPost() //Ejecutamos la función
+                    .then((newPost) =>{    
+                    setPost(newPost); 
+                    }) 
+            }
+
+*Vamos a crear un estado que nos indique cuando este cargando el componente y que cuando el componente se cargue su valor inicial sea verdadero, es decir, la primera vez
+ el componente va a estar en loading:
+        const [loading, setLoading] = useState(true);
+    
+ y cuando termine la petición y ya haya actualizado el estado post entonces setLoading va a ser false:
+
+            function Card() {
+                        const [post, setPost] = useState({ title: "post1"});
+                        const updatePost =  () =>{
+                            
+                            getPost() //Ejecutamos la función
+                                .then((newPost) =>{    
+                                setPost(newPost); 
+                                setLoading(false);
+                                }) 
+                        }
+
+Antes de retornar nuestro componente creamos un if que si esta en loading me retorne un mensaje de "Loading" :          if(loading) return <h1>Loading...</h1>
+
+
+*En el archivo LoadingApp y vamos arenderizar condicionalmente el Card para ellos cargamos un useState y creamos el estado el cual se va a inicializar el false:
+    const [show, setShow] = useState(false);
+
+El boton que creamos  os va a realizar el cambio del estado, después que creamos el boton renderizamos: 
+
+    <div>
+        <button onClick={() => setShow(!show)}>Show/Hide</button>
+        { show && <Card/>}
+    </div>
+
+*Ahora vamos a crear una referencia mutable en la cual vamos a guardar el valor del componente montado o desmontado, esto debido a que si llega a ocurrir un error debido
+ a que le damos varios clicks al boton y la aplicación no sabe donde encontrar el componente, esa referencia va a tener el valor de true y nos indique que el componente 
+ esta montado y después que el componente se desmonte la primera vez pues ahora ese valor va a cambiar a false y lo utilizaremos para condicionalmente llamar al setPost
+ y al setLoading o no hacerlo:
+
+    const isMountedRef = useRef(true);          ------>ACÁ
+
+    const updatePost =  () =>{
+    //Ejecutamos la función que queremos en el helper 
+        getPost() 
+            .then((newPost) =>{    
+            setTimeout(() =>{
+                if(isMountedRef.current){       ------>ACÁ
+                    setPost(newPost);
+                    setLoading(false);
+                }
+            }, 1000);
+            }) 
+    }
+
+    useEffect(() =>{
+        updatePost();
+        return () => {                      ------>ACÁ
+        isMountedRef.current = false;
+        }
+    }, []);
+
+
+

@@ -1,13 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card } from './Card';
 
 function LoadingApp() {
+  const [show, setShow] = useState(false);
   return (
     <div>
-        <Card/>
-        <h1>
-            Soy LoadingApp
-        </h1>
+        <button onClick={() => setShow(!show)}>Show/Hide</button>
+        { show && <Card/>}
     </div>
   )
 }
